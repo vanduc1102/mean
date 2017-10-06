@@ -15,7 +15,7 @@ module.exports = {
     format: 'dev',
     fileLogger: {
       directoryPath: process.cwd(),
-      fileName: 'app.log',
+      fileName: 'logs/app.log',
       maxsize: 10485760,
       maxFiles: 2,
       json: false
