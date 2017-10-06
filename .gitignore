@@ -36,7 +36,7 @@ _site/
 
 # General
 # =======
-logs/*.log
+logs/
 *.csv
 *.dat
 *.out
