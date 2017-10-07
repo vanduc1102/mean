@@ -37,6 +37,7 @@ _site/
 # General
 # =======
 logs/*.log
+app.log
 *.csv
 *.dat
 *.out

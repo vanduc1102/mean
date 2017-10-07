@@ -19,7 +19,7 @@
 
 module.exports = {
   db: {
-    uri: 'mongodb://localhost/local-dev',
+    uri: 'mongodb://localhost:27017/local-dev',
     options: {}
   },
   sessionSecret: process.env.SESSION_SECRET || 'youshouldchangethistosomethingsecret',

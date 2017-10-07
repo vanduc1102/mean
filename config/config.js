@@ -7,6 +7,7 @@ var _ = require('lodash'),
   chalk = require('chalk'),
   glob = require('glob'),
   fs = require('fs'),
+  envUtil = require('./util/env'),
   path = require('path');
 
 /**
@@ -29,6 +30,9 @@ var getGlobbedPaths = function (globPatterns, excludes) {
       output.push(globPatterns);
     } else {
       var files = glob.sync(globPatterns);
+      if (files.length === 0) {
+        console.log(JSON.stringify(globPatterns) + ' does not exist.');
+      }
       if (excludes) {
         files = files.map(function (file) {
           if (_.isArray(excludes)) {
@@ -102,7 +106,7 @@ var validateSecureMode = function (config) {
  */
 var validateSessionSecret = function (config, testing) {
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!envUtil.isProd()) {
     return true;
   }
 

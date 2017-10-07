@@ -8,6 +8,7 @@ var _ = require('lodash'),
   defaultAssets = require('./config/assets/default'),
   testAssets = require('./config/assets/test'),
   testConfig = require('./config/env/test'),
+  frontEndAssets = require('./config/assets/frontendAssets'),
   glob = require('glob'),
   gulp = require('gulp'),
   gulpLoadPlugins = require('gulp-load-plugins'),
@@ -18,11 +19,11 @@ var _ = require('lodash'),
     }
   }),
   pngquant = require('imagemin-pngquant'),
-  wiredep = require('wiredep').stream,
   path = require('path'),
   endOfLine = require('os').EOL,
   del = require('del'),
-  semver = require('semver');
+  semver = require('semver'),
+  publicLibs = path.resolve('public', 'lib');
 
 // Local settings
 var changedTestFiles = [];
@@ -74,6 +75,7 @@ gulp.task('watch', function () {
   // Add watch rules
   gulp.watch(defaultAssets.server.views).on('change', plugins.refresh.changed);
   gulp.watch(defaultAssets.server.allJS, ['eslint']).on('change', plugins.refresh.changed);
+  gulp.watch(frontEndAssets.libs, ['publicFrontendLibs']).on('change', plugins.refresh.changed);
   gulp.watch(defaultAssets.client.js, ['eslint']).on('change', plugins.refresh.changed);
   gulp.watch(defaultAssets.client.css, ['csslint']).on('change', plugins.refresh.changed);
   gulp.watch(defaultAssets.client.sass, ['sass', 'csslint']).on('change', plugins.refresh.changed);
@@ -193,48 +195,6 @@ gulp.task('imagemin', function () {
     .pipe(gulp.dest('public/dist/img'));
 });
 
-// wiredep task to default
-gulp.task('wiredep', function () {
-  return gulp.src('config/assets/default.js')
-    .pipe(wiredep({
-      ignorePath: '../../'
-    }))
-    .pipe(gulp.dest('config/assets/'));
-});
-
-// wiredep task to production
-gulp.task('wiredep:prod', function () {
-  return gulp.src('config/assets/production.js')
-    .pipe(wiredep({
-      ignorePath: '../../',
-      fileTypes: {
-        js: {
-          replace: {
-            css: function (filePath) {
-              var minFilePath = filePath.replace('.css', '.min.css');
-              var fullPath = path.join(process.cwd(), minFilePath);
-              if (!fs.existsSync(fullPath)) {
-                return '\'' + filePath + '\',';
-              } else {
-                return '\'' + minFilePath + '\',';
-              }
-            },
-            js: function (filePath) {
-              var minFilePath = filePath.replace('.js', '.min.js');
-              var fullPath = path.join(process.cwd(), minFilePath);
-              if (!fs.existsSync(fullPath)) {
-                return '\'' + filePath + '\',';
-              } else {
-                return '\'' + minFilePath + '\',';
-              }
-            }
-          }
-        }
-      }
-    }))
-    .pipe(gulp.dest('config/assets/'));
-});
-
 // Copy local development environment config example
 gulp.task('copyLocalEnvConfig', function () {
   var src = [];
@@ -248,6 +208,13 @@ gulp.task('copyLocalEnvConfig', function () {
   return gulp.src(src)
     .pipe(plugins.rename(renameTo))
     .pipe(gulp.dest('config/env'));
+});
+
+// Copy frontEnd libs from node_modules to public static resources.
+gulp.task('publicFrontendLibs', function () {
+  var src = frontEndAssets.libs.map((v) => 'node_modules/' + v + '/**', []);
+  return gulp.src(src, { base: 'node_modules/' })
+    .pipe(gulp.dest(publicLibs));
 });
 
 // Make sure upload directory exists
@@ -451,7 +418,7 @@ gulp.task('lint', function (done) {
 
 // Lint project files and minify them into two production files.
 gulp.task('build', function (done) {
-  runSequence('env:dev', 'wiredep:prod', 'lint', ['uglify', 'cssmin'], done);
+  runSequence('env:dev', 'lint', ['uglify', 'cssmin'], done);
 });
 
 // Run the project tests
