@@ -38,7 +38,7 @@ RUN sudo apt-get install -yq nodejs \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install MEAN.JS Prerequisites
-RUN npm install --quiet -g gulp bower yo mocha karma-cli pm2 && npm cache clean
+RUN npm install --quiet -g gulp node-gyp yo mocha karma-cli pm2 && npm cache clean
 
 RUN mkdir -p /opt/mean.js/public/lib
 WORKDIR /opt/mean.js
@@ -51,12 +51,7 @@ WORKDIR /opt/mean.js
 COPY package.json /opt/mean.js/package.json
 RUN npm install --quiet && npm cache clean
 
-# Install bower packages
-COPY bower.json /opt/mean.js/bower.json
-COPY .bowerrc /opt/mean.js/.bowerrc
-RUN bower install --quiet --allow-root --config.interactive=false
-
 COPY . /opt/mean.js
 
 # Run MEAN.JS server
-CMD npm install && npm start
+RUN npm install && npm start
