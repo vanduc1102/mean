@@ -1,7 +1,7 @@
 'use strict';
 
 const semver = require('semver');
-const engines =  require('./package').engines;
+const engines = require('./package').engines;
 const chalk = require('chalk');
 
 const version = engines.node;
